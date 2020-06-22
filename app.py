@@ -1,0 +1,111 @@
+import subprocess
+import requests
+import logging
+import shlex
+import yaml
+import os.path
+import sys
+
+# API_SECRET = "YOUR_DIGITAL_OCEAN_API_KEY"
+config_file="config.yaml"
+
+def configParse():
+    _api_key = None
+    _tld = None
+    _update_domain = None
+
+    api_key = None
+    tld = None
+    update_domain = None
+
+    if not os.path.exists("./config.yaml"):
+        _api_key=input("Enter your digitalocean API key: ")
+        _tld=input("Enter top level domain to update: ")
+        _sub_domain=input("Enter hostname to update: ")
+        config={
+            'api_key': _api_key,
+            'tld': _tld,
+            'update_domain': _sub_domain + "." + _tld
+        }
+        with open(config_file, 'w') as file:
+            yaml.dump(config, file)
+    else:
+        with open(config_file, 'r') as file:
+            config = yaml.full_load(file)
+
+    for key,value in config.items():
+        if key == "api_key":
+            api_key = value
+        if key == "tld":
+            tld = value
+        if key == "update_domain":
+            update_domain = value
+    if api_key is None or tld is None or update_domain is None:
+        print("Config invalid. Correct the config or delete and create a new on config.")
+        sys.exit(1)
+        
+    return(api_key, tld, update_domain)
+
+def getExternalCurrentIP():
+  cmd='dig @resolver1.opendns.com ANY -4 myip.opendns.com +short'
+  proc=subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE)
+  out,err=proc.communicate()
+  currentIPv4 = out.decode('UTF-8').strip('\n')
+  return currentIPv4
+
+def validateAndUpdateIPLocally(currentExternalIP, api_key, tld, update_domain):
+    
+    headers = {'Content-Type':'application/json','Authorization': 'Bearer ' + api_key}
+    get_url = "https://api.digitalocean.com/v2/domains/{}/records?name={}".format(tld, update_domain)
+    try:
+        r = requests.get(get_url, headers=headers, timeout=1)
+    except TimeoutError as err:
+        print("Timed out accessing DigitalOcean")
+        print(err)
+        sys.exit(1)
+
+    if r.status_code == 200:
+        try:
+            content = r.json()
+            if content['meta']['total'] == 0:
+                print("No current DNS entry found. Add a manual A record and then retry")
+                sys.exit(1)
+            elif content['meta']['total'] > 1:
+                print("Returned more than 1 IP for current hostname. Exiting as assume something is wrong.")
+                sys.exit(1)
+            else:
+                record_id = content['domain_records'][0]['id']
+                current_DNS_IP = content['domain_records'][0]['data']
+                if content['domain_records'][0]['type'] == 'CNAME':
+                    print("Current DNS record is set as a CNAME but we cannot change record type.\n\nPlease delete the record and retry.")
+                    sys.exit(1)
+
+        except ValueError as err:
+            print("Unknown content returned when looking up existing IP")
+            print(err)
+            sys.exit(1)
+
+    else:
+        print("Failed to get current ip: ", r.reason)
+        print(r.text)
+        sys.exit(1)
+        
+    if currentExternalIP == current_DNS_IP:
+        # Current IP matches DNS IP
+        sys.exit(0)
+
+    else:
+        put_url = "https://api.digitalocean.com/v2/domains/{}/records/{}".format(tld, record_id)
+        payload = {"data": currentExternalIP}
+        r = requests.put(put_url, headers=headers, json = payload)
+        logging.basicConfig(filename='example.log',level=logging.DEBUG,format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+        logging.info('Text:'+r.text+" status code "+ str(r.status_code) )
+
+def main():
+    api_key, tld, update_domain = configParse()
+    currentExternalIP = getExternalCurrentIP()
+    validateAndUpdateIPLocally(currentExternalIP, api_key, tld, update_domain)
+
+
+if __name__ == "__main__":
+    main()
