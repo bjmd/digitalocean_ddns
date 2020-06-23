@@ -56,7 +56,7 @@ def validateAndUpdateIPLocally(currentExternalIP, api_key, tld, update_domain):
     headers = {'Content-Type':'application/json','Authorization': 'Bearer ' + api_key}
     get_url = "https://api.digitalocean.com/v2/domains/{}/records?name={}".format(tld, update_domain)
     try:
-        r = requests.get(get_url, headers=headers, timeout=1)
+        r = requests.get(get_url, headers=headers, timeout=5)
     except TimeoutError as err:
         print("Timed out accessing DigitalOcean")
         print(err)
