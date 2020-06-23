@@ -8,6 +8,7 @@ import sys
 import argparse
 
 def configParse(config_file):
+
     _api_key = None
     _tld = None
     _update_domain = None
@@ -16,6 +17,7 @@ def configParse(config_file):
     tld = None
     update_domain = None
 
+    # If config file doesn,t exist then create it
     if not os.path.exists(config_file):
         _api_key=input("Enter your digitalocean API key: ")
         _tld=input("Enter top level domain to update: ")
@@ -25,9 +27,11 @@ def configParse(config_file):
             'tld': _tld,
             'update_domain': _sub_domain + "." + _tld
         }
+        # Write new config to file
         with open(config_file, 'w') as file:
             yaml.dump(config, file)
     else:
+        # Read config if it exists
         with open(config_file, 'r') as file:
             config = yaml.full_load(file)
 
@@ -38,6 +42,7 @@ def configParse(config_file):
             tld = value
         if key == "update_domain":
             update_domain = value
+    # Validate that we find an API key, tld and domain name
     if api_key is None or tld is None or update_domain is None:
         print("Config invalid. Correct the config or delete and create a new on config.")
         sys.exit(1)
@@ -45,13 +50,15 @@ def configParse(config_file):
     return(api_key, tld, update_domain)
 
 def getExternalCurrentIP():
-  cmd='dig @resolver1.opendns.com ANY -4 myip.opendns.com +short'
-  proc=subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE)
-  out,err=proc.communicate()
-  currentIPv4 = out.decode('UTF-8').strip('\n')
-  return currentIPv4
 
-def validateAndUpdateIPLocally(currentExternalIP, api_key, tld, update_domain):
+    # Get current external IP. Check DNS instead of a web service for reliability. 
+    cmd='dig @resolver1.opendns.com ANY -4 myip.opendns.com +short'
+    proc=subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE)
+    out,err=proc.communicate()
+    currentIPv4 = out.decode('UTF-8').strip('\n')
+    return currentIPv4
+
+def updateIP(currentExternalIP, api_key, tld, update_domain):
     
     headers = {'Content-Type':'application/json','Authorization': 'Bearer ' + api_key}
     get_url = "https://api.digitalocean.com/v2/domains/{}/records?name={}".format(tld, update_domain)
@@ -118,7 +125,7 @@ def main():
 
     api_key, tld, update_domain = configParse(config_file)
     currentExternalIP = getExternalCurrentIP()
-    validateAndUpdateIPLocally(currentExternalIP, api_key, tld, update_domain)
+    updateIP(currentExternalIP, api_key, tld, update_domain)
 
 
 if __name__ == "__main__":
