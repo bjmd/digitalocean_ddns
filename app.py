@@ -5,11 +5,9 @@ import shlex
 import yaml
 import os.path
 import sys
+import argparse
 
-# API_SECRET = "YOUR_DIGITAL_OCEAN_API_KEY"
-config_file="config.yaml"
-
-def configParse():
+def configParse(config_file):
     _api_key = None
     _tld = None
     _update_domain = None
@@ -18,7 +16,7 @@ def configParse():
     tld = None
     update_domain = None
 
-    if not os.path.exists("./config.yaml"):
+    if not os.path.exists(config_file):
         _api_key=input("Enter your digitalocean API key: ")
         _tld=input("Enter top level domain to update: ")
         _sub_domain=input("Enter hostname to update: ")
@@ -102,7 +100,23 @@ def validateAndUpdateIPLocally(currentExternalIP, api_key, tld, update_domain):
         logging.info('Text:'+r.text+" status code "+ str(r.status_code) )
 
 def main():
-    api_key, tld, update_domain = configParse()
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c",
+                        required=False,
+                        help="Specify alternate config location",
+                        action="store",
+                        dest="config",
+                        default=None
+                        )
+    ap_parsed = parser.parse_args()
+    
+    if ap_parsed.config:
+        config_file = ap_parsed.config
+    else:
+        config_file = "config.yaml"
+
+    api_key, tld, update_domain = configParse(config_file)
     currentExternalIP = getExternalCurrentIP()
     validateAndUpdateIPLocally(currentExternalIP, api_key, tld, update_domain)
 
