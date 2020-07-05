@@ -1,5 +1,7 @@
 # digitalocean_ddns
 
+![Docker Image CI](https://github.com/bjmd/digitalocean_ddns/workflows/Docker%20Image%20CI/badge.svg)
+
 A DigitalOcean ddns client, inspired by https://github.com/satyamkapoor/homeIPv4DynamicUpdateDNS. 
 
 The above project was the basis for this one, but expanded on to add use of a config file add some additional functionality. 
