@@ -1,53 +1,10 @@
 import subprocess
 import requests
-import logging
 import shlex
 import yaml
-import os.path
+import os
 import sys
 import argparse
-
-def configParse(config_file):
-
-    _api_key = None
-    _tld = None
-    _update_domain = None
-
-    api_key = None
-    tld = None
-    update_domain = None
-
-    # If config file doesn,t exist then create it
-    if not os.path.exists(config_file):
-        _api_key=input("Enter your digitalocean API key: ")
-        _tld=input("Enter top level domain to update: ")
-        _sub_domain=input("Enter hostname to update: ")
-        config={
-            'api_key': _api_key,
-            'tld': _tld,
-            'update_domain': _sub_domain + "." + _tld
-        }
-        # Write new config to file
-        with open(config_file, 'w') as file:
-            yaml.dump(config, file)
-    else:
-        # Read config if it exists
-        with open(config_file, 'r') as file:
-            config = yaml.full_load(file)
-
-    for key,value in config.items():
-        if key == "api_key":
-            api_key = value
-        if key == "tld":
-            tld = value
-        if key == "update_domain":
-            update_domain = value
-    # Validate that we find an API key, tld and domain name
-    if api_key is None or tld is None or update_domain is None:
-        print("Config invalid. Correct the config or delete and create a new on config.")
-        sys.exit(1)
-        
-    return(api_key, tld, update_domain)
 
 def getExternalCurrentIP():
 
@@ -103,10 +60,30 @@ def updateIP(currentExternalIP, api_key, tld, update_domain):
         put_url = "https://api.digitalocean.com/v2/domains/{}/records/{}".format(tld, record_id)
         payload = {"data": currentExternalIP}
         r = requests.put(put_url, headers=headers, json = payload)
-        logging.basicConfig(filename='example.log',level=logging.DEBUG,format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
-        logging.info('Text:'+r.text+" status code "+ str(r.status_code) )
+        print(r.text, t.status_code)
+        # logging.basicConfig(filename='example.log',level=logging.DEBUG,format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+        # logging.info('Text:'+r.text+" status code "+ str(r.status_code) )
 
 def main():
+
+    if os.getenv("API_KEY"):
+        api_key = os.environ['API_KEY']
+    else:
+        print("API_KEY environment is not set.")
+        sys.exit(1)
+        
+    if os.getenv("DOMAIN"):
+        tld = os.environ['DOMAIN']
+    else:
+        print("DOMAIN environment is not set.")
+        sys.exit(1)
+        
+    if os.getenv("UPDATE_DOMAIN"):
+        update_domain = os.environ['UPDATE_DOMAIN']
+    else:
+        print("UPDATE_DOMAIN environment is not set.")
+        sys.exit(1)
+
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-c",
@@ -123,10 +100,8 @@ def main():
     else:
         config_file = "config.yaml"
 
-    api_key, tld, update_domain = configParse(config_file)
     currentExternalIP = getExternalCurrentIP()
     updateIP(currentExternalIP, api_key, tld, update_domain)
-
 
 if __name__ == "__main__":
     main()
