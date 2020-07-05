@@ -82,7 +82,6 @@ def main():
         print("UPDATE_DOMAIN environment is not set.")
         sys.exit(1)
 
-
     parser = argparse.ArgumentParser()
     parser.add_argument("-c",
                         required=False,
