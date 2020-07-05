@@ -61,8 +61,6 @@ def updateIP(currentExternalIP, api_key, tld, update_domain):
         payload = {"data": currentExternalIP}
         r = requests.put(put_url, headers=headers, json = payload)
         print(r.text, t.status_code)
-        # logging.basicConfig(filename='example.log',level=logging.DEBUG,format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
-        # logging.info('Text:'+r.text+" status code "+ str(r.status_code) )
 
 def main():
 
