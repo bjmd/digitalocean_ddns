@@ -4,7 +4,6 @@ import shlex
 import yaml
 import os
 import sys
-import argparse
 
 def getExternalCurrentIP():
 
