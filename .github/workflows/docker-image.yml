@@ -15,4 +15,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      run: docker build . --file Dockerfile --tag bjmd/digitalocean_ddns:$(date +%s)
+    - name: Push docker image
+      run: docker push bjmd/digitalocean_ddns
