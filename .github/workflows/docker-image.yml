@@ -14,19 +14,19 @@ jobs:
 
     steps:      
     - uses: actions/checkout@v2
-    
+
     - name: Set outputs
       id: vars
       run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
     
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag bjmd/digitalocean_ddns:${{ steps.vars.outputs.sha_short }}
+      run: docker build . --file Dockerfile --tag bjmd/digitalocean_ddns
+
+    - name: Build the Docker image
+      run: docker tag bjmd/digitalocean_ddns:${{ steps.vars.outputs.sha_short }}
 
     - name: Login dockerhub image
       run: echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
     - name: Push docker image
       run: docker push bjmd/digitalocean_ddns
-
-    - name: Tag image latest
-      run: docker tag bjmd/digitalocean_ddns:${{ steps.vars.outputs.sha_short }} bjmd/digitalocean_ddns:latest
