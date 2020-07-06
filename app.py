@@ -72,7 +72,7 @@ def updateIP(currentExternalIP, api_key, tld, update_domain):
         try:
             content = r.json()
             if content['meta']['total'] == 0:
-                print("No current DNS entry found. Add a manual A record and then retry")
+                print("No current DNS entry found for {}. Add a manual A record and then retry".format(update_domain))
                 sys.exit(1)
             elif content['meta']['total'] > 1:
                 print("Returned more than 1 IP for current hostname. Exiting as assume something is wrong.")
