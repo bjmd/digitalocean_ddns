@@ -13,11 +13,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:      
+    - uses: actions/checkout@v2
+    
     - name: Set outputs
       id: vars
       run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-
-    - uses: actions/checkout@v2
     
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag bjmd/digitalocean_ddns:${{ steps.vars.outputs.sha_short }}
