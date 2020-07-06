@@ -102,8 +102,8 @@ def main():
             print("DOMAIN environment is not set.")
             sys.exit(1)
             
-        if os.getenv("UPDATE_DOMAIN"):
-            update_domain = os.environ['UPDATE_DOMAIN']
+        if os.getenv("HOSTNAME"):
+            update_domain = os.environ['HOSTNAME']
         else:
             print("UPDATE_DOMAIN environment is not set.")
             sys.exit(1)
