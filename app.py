@@ -15,11 +15,11 @@ def configParse(config_file):
         config = yaml.full_load(file)
 
     for key,value in config.items():
-        if key == "api_key":
+        if key == "API_KEY":
             api_key = value
-        if key == "tld":
+        if key == "DOMAIN":
             tld = value
-        if key == "update_domain":
+        if key == "FQDN":
             update_domain = value
     # Validate that we find an API key, tld and domain name
     if api_key is None or tld is None or update_domain is None:
@@ -102,10 +102,10 @@ def main():
             print("DOMAIN environment is not set.")
             sys.exit(1)
             
-        if os.getenv("HOSTNAME"):
-            update_domain = os.environ['HOSTNAME']
+        if os.getenv("FQDN"):
+            update_domain = os.environ['FQDN']
         else:
-            print("UPDATE_DOMAIN environment is not set.")
+            print("FQDN environment is not set.")
             sys.exit(1)
 
     else:
