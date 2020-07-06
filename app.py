@@ -59,7 +59,7 @@ def updateIP(currentExternalIP, api_key, tld, update_domain):
         put_url = "https://api.digitalocean.com/v2/domains/{}/records/{}".format(tld, record_id)
         payload = {"data": currentExternalIP}
         r = requests.put(put_url, headers=headers, json = payload)
-        print(r.text, t.status_code)
+        print(r.text, r.status_code)
 
 def main():
 
