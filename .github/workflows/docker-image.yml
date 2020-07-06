@@ -19,10 +19,10 @@ jobs:
       id: vars
       run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
     
-    - name: Build the Docker image
+    - name: Build Docker image
       run: docker build . --file Dockerfile --tag bjmd/digitalocean_ddns
 
-    - name: Build the Docker image
+    - name: Tag Docker image
       run: docker tag bjmd/digitalocean_ddns bjmd/digitalocean_ddns:${{ steps.vars.outputs.sha_short }}
 
     - name: Login dockerhub image
