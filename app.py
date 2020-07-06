@@ -8,31 +8,12 @@ import argparse
 
 def configParse(config_file):
 
-    _api_key = None
-    _tld = None
-    _update_domain = None
-
     api_key = None
     tld = None
     update_domain = None
-
-    # If config file doesn,t exist then create it
-    if not os.path.exists(config_file):
-        _api_key=input("Enter your digitalocean API key: ")
-        _tld=input("Enter top level domain to update: ")
-        _sub_domain=input("Enter hostname to update: ")
-        config={
-            'api_key': _api_key,
-            'tld': _tld,
-            'update_domain': _sub_domain + "." + _tld
-        }
-        # Write new config to file
-        with open(config_file, 'w') as file:
-            yaml.dump(config, file)
-    else:
-        # Read config if it exists
-        with open(config_file, 'r') as file:
-            config = yaml.full_load(file)
+    
+    with open(config_file, 'r') as file:
+        config = yaml.full_load(file)
 
     for key,value in config.items():
         if key == "api_key":
@@ -43,7 +24,7 @@ def configParse(config_file):
             update_domain = value
     # Validate that we find an API key, tld and domain name
     if api_key is None or tld is None or update_domain is None:
-        print("Config invalid. Correct the config or delete and create a new on config.")
+        print("Config invalid. Correct the config or pass options as variables.")
         sys.exit(1)
 
     return(api_key, tld, update_domain)
@@ -106,21 +87,9 @@ def updateIP(currentExternalIP, api_key, tld, update_domain):
 
 def main():
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-c",
-                        required=False,
-                        help="Specify alternate config location",
-                        action="store",
-                        dest="config",
-                        default=None
-                        )
-    ap_parsed = parser.parse_args()
+    config_file='/config/config.yaml'
     
-    if ap_parsed.config:
-        config_file = ap_parsed.config
-        api_key, tld, update_domain = configParse(config_file)
-        
-    else:
+    if not os.path.exists(config_file):
 
         if os.getenv("API_KEY"):
             api_key = os.environ['API_KEY']
@@ -139,6 +108,9 @@ def main():
         else:
             print("UPDATE_DOMAIN environment is not set.")
             sys.exit(1)
+
+    else:
+        api_key, tld, update_domain = configParse(config_file)
 
     currentExternalIP = getExternalCurrentIP()
     updateIP(currentExternalIP, api_key, tld, update_domain)
