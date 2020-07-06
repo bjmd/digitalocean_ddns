@@ -4,6 +4,7 @@ import shlex
 import yaml
 import os
 import sys
+from datetime import datetime
 
 def configParse(config_file):
 
@@ -23,10 +24,13 @@ def configParse(config_file):
             update_domain = value
     # Validate that we find an API key, tld and domain name
     if api_key is None or tld is None or update_domain is None:
-        print("Config invalid. Correct the config or pass options as variables.")
+        log("Config invalid. Correct the config or pass options as variables.")
         sys.exit(1)
 
     return(api_key, tld, update_domain)
+
+def log(message):
+    print("{} {}".format(datetime.now(), message))
 
 def getExternalCurrentIP():
 
@@ -44,7 +48,7 @@ def updateIP(currentExternalIP, api_key, tld, update_domain):
     try:
         r = requests.get(get_url, headers=headers, timeout=5)
     except TimeoutError as err:
-        print("Timed out accessing DigitalOcean")
+        log("Timed out accessing DigitalOcean")
         print(err)
         sys.exit(1)
 
@@ -52,38 +56,38 @@ def updateIP(currentExternalIP, api_key, tld, update_domain):
         try:
             content = r.json()
             if content['meta']['total'] == 0:
-                print("No current DNS entry found for {}. Add a manual A record and then retry".format(update_domain))
+                log("No current DNS entry found for {}. Add a manual A record and then retry".format(update_domain))
                 sys.exit(1)
             elif content['meta']['total'] > 1:
-                print("Returned more than 1 IP for current hostname. Exiting as assume something is wrong.")
+                log("Returned more than 1 IP for current hostname. Exiting as assume something is wrong.")
                 sys.exit(1)
             else:
                 record_id = content['domain_records'][0]['id']
                 current_DNS_IP = content['domain_records'][0]['data']
                 if content['domain_records'][0]['type'] == 'CNAME':
-                    print("Current DNS record is set as a CNAME but we cannot change record type.\n\nPlease delete the record and retry.")
+                    log("\nCurrent DNS record is set as a CNAME but we cannot change record type.\n\nPlease delete the record and retry.")
                     sys.exit(1)
 
         except ValueError as err:
-            print("Unknown content returned when looking up existing IP")
+            log("Unknown content returned when looking up existing IP")
             print(err)
             sys.exit(1)
 
     else:
-        print("Failed to get current ip: ", r.reason)
+        log("Failed to get current ip: {}".format(r.reason))
         print(r.text)
         sys.exit(1)
         
     if currentExternalIP == current_DNS_IP:
         # Current IP matches DNS IP
-        print("No change in IP found.")
+        log("No change in IP found.")
         sys.exit(0)
 
     else:
         put_url = "https://api.digitalocean.com/v2/domains/{}/records/{}".format(tld, record_id)
         payload = {"data": currentExternalIP}
         r = requests.put(put_url, headers=headers, json = payload)
-        print(r.text, r.status_code)
+        log("{} {}".format(r.text, r.status_code))
 
 def main():
 
