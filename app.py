@@ -76,6 +76,7 @@ def updateIP(currentExternalIP, api_key, tld, update_domain):
         
     if currentExternalIP == current_DNS_IP:
         # Current IP matches DNS IP
+        print("No change in IP found.")
         sys.exit(0)
 
     else:
