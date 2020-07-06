@@ -6,4 +6,4 @@ RUN pip install -r requirements.txt
 RUN apt update
 RUN apt install dnsutils -y
 
-CMD ["python", "/opt/app.py"]`
+ENTRYPOINT [ "python", "/opt/app.py" ]
