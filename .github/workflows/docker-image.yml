@@ -9,18 +9,24 @@ on:
 jobs:
 
   build:
-    env:
-      SHA8: ${GITHUB_SHA::8}
 
     runs-on: ubuntu-latest
 
-    steps:
+    steps:      
+    - name: Set outputs
+      id: vars
+      run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+
     - uses: actions/checkout@v2
+    
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag bjmd/digitalocean_ddns:$SHA8
+      run: docker build . --file Dockerfile --tag bjmd/digitalocean_ddns:${{ steps.vars.outputs.sha_short }}
+
     - name: Login dockerhub image
       run: echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
     - name: Push docker image
       run: docker push bjmd/digitalocean_ddns
+
     - name: Tag image latest
-      run: docker tag bjmd/digitalocean_ddns:$SHA8 bjmd/digitalocean_ddns:latest
+      run: docker tag bjmd/digitalocean_ddns:${{ steps.vars.outputs.sha_short }} bjmd/digitalocean_ddns:latest
