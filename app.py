@@ -5,6 +5,7 @@ import yaml
 import os
 import sys
 from datetime import datetime
+import dns.resolver
 
 def configParse(config_file):
 
@@ -34,12 +35,13 @@ def log(message):
 
 def getExternalCurrentIP():
 
-    # Get current external IP. Check DNS instead of a web service for reliability. 
-    cmd='dig @resolver1.opendns.com ANY -4 myip.opendns.com +short'
-    proc=subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE)
-    out,err=proc.communicate()
-    currentIPv4 = out.decode('UTF-8').strip('\n')
-    return currentIPv4
+    domain = 'myip.opendns.com'
+
+    resolver = dns.resolver.Resolver()
+    resolver.nameservers = ['208.67.222.222', '208.67.220.220'] # opendns nameservers
+    current_ip = resolver.query(domain)
+
+    return current_ip
 
 def updateIP(currentExternalIP, api_key, tld, update_domain):
     
