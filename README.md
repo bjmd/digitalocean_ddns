@@ -21,7 +21,7 @@ Example with config mapping:
     docker create \
         --name digitalocean_ddns
         -v /path/to/config/:/config/
-        bjmd/digitalocean_ddns
+        bjmd/digitalocean_ddns:latest
 
 Example passing environment variables:
 
@@ -30,7 +30,7 @@ Example passing environment variables:
         -e API_KEY=00000000
         -e DOMAIN=example.com
         -e HOSTNAME=myhost.example.com
-        bjmd/digitalocean_ddns
+        bjmd/digitalocean_ddns:latest
 
 
 If you map in a directory containing a config file, the file must be named `config.yaml`. 
@@ -47,3 +47,9 @@ This container does not run continuously. To enable periodic updating on Linux y
 You can then view the logs for the last run with:
 
 `docker logs digitalocean_ddns`
+
+Finally, if you have a need to update to a newer build of the container then assuming the same name was used above you can use the following commands:
+
+    docker pull bjmd/digitalocean_ddns:latest && docker rm digitalocean_ddns
+
+Then re-create using your chosed method above. 
