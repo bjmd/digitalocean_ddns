@@ -4,6 +4,7 @@ import shlex
 import yaml
 import os
 import sys
+import socket
 from datetime import datetime
 import dns.resolver
 
@@ -39,7 +40,16 @@ def getExternalCurrentIP():
 
     resolver = dns.resolver.Resolver()
     resolver.nameservers = ['208.67.222.222', '208.67.220.220'] # opendns nameservers
-    current_ip = resolver.query(domain)
+    answer = resolver.query(domain)
+
+    current_ip = str(answer[0])
+
+    try:
+        # Validate IP with builtin 
+        socket.inet_aton(current_ip)
+    except OSError:
+        log("Unable to lookup current external IP. Answer returned {}".format(current_ip))
+        sys.exit(1)
 
     return current_ip
 
